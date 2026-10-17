@@ -346,11 +346,14 @@ class ProxyConnection extends EventEmitter {
       clearTimeout(connectTimeout);
       if (abandoned || this.ended || upstream !== this.upstream) return;
 
+      const disconnectReason = this.upstreamDisconnectReason;
+      const fallbackReason = this.upstreamReady
+        ? 'Upstream closed the connection'
+        : 'Upstream closed the connection before login completed';
       const reason =
-        this.upstreamDisconnectReason ||
-        (this.upstreamReady
-          ? 'Upstream closed the connection'
-          : 'Upstream closed the connection before login completed');
+        disconnectReason !== null && disconnectReason !== ''
+          ? disconnectReason
+          : fallbackReason;
       if (forcePremium && !this.upstreamReady) this.emit('auth-error', reason);
       this.close(reason);
     });
