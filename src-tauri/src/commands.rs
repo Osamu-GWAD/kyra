@@ -412,7 +412,7 @@ pub fn rpc_destroy(state: tauri::State<'_, AppState>) -> Result<(), String> {
 
 fn stats_base(network: &str) -> Result<&'static str, String> {
     match network {
-        "pika" => Ok("https://stats.pika-network.net/api"),
+        "pika" => Ok("https://proxy.kyizl.is-a.dev/api"),
         "jartex" => Ok("https://stats.jartexnetwork.com/api"),
         _ => Err("unsupported statistics network".to_owned()),
     }
