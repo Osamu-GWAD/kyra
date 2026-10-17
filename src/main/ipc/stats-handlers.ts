@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { apiGet, cache, dedupe } from '../http-client';
 import { dbg } from '../logger';
 
-const pika = 'https://stats.pika-network.net/api';
+const pika = 'https://proxy.kyizl.is-a.dev/api';
 const jartex = 'https://stats.jartexnetwork.com/api';
 
 type StatsNetwork = 'pika' | 'jartex';
