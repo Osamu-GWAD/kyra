@@ -39,6 +39,7 @@ jobs:
 
       - name: Run semantic-release
         id: release
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           GIT_AUTHOR_NAME: github-actions[bot]
