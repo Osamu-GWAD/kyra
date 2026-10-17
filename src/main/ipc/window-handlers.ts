@@ -1,5 +1,5 @@
 import process from 'node:process';
-import { clipboard, ipcMain, shell } from 'electron';
+import { clipboard, ClipboardItem, ipcMain, shell } from 'electron';
 import { dbg } from '../logger';
 import {
   allowLinuxMinimize,
@@ -65,6 +65,8 @@ export function registerWindowHandlers(): void {
 
   ipcMain.handle('win:screenshot', async () => {
     const image = await getMainWindow()?.webContents.capturePage();
-    if (image) clipboard.writeImage(image);
+    if (!image) return;
+    const png = new Blob([new Uint8Array(image.toPNG())], { type: 'image/png' });
+    await clipboard.write([new ClipboardItem({ 'image/png': png })]);
   });
 }
