@@ -4,6 +4,7 @@ mod auth;
 mod commands;
 mod migration;
 mod state;
+mod updater;
 
 use tauri::Manager;
 
@@ -26,6 +27,7 @@ fn main() {
                 .build(),
         )
         .manage(state::AppState::default())
+        .manage(updater::UpdaterState::default())
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir()?;
             let app_config_dir = app.path().app_config_dir()?;
@@ -48,8 +50,8 @@ fn main() {
             commands::window_close,
             commands::window_open_external,
             commands::clipboard_set_text,
-            commands::updater_check,
-            commands::updater_install,
+            updater::updater_check,
+            updater::updater_install,
             commands::auth_start,
             commands::auth_poll,
             commands::auth_status,

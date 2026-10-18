@@ -5,7 +5,6 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use rfd::FileDialog;
 use screenshots::Screen;
 use serde::Serialize;
-use sha2::{Digest, Sha256};
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
@@ -16,38 +15,9 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutWrapper};
 const MIN_WIDTH_DELTA: u32 = 24;
 const MAX_WIDTH_DELTA: u32 = 480;
 const TELEMETRY_API: &str = "https://overlay.kyizl.is-a.dev";
-const PRODUCTION_RELEASES_API: &str = "https://api.github.com/repos/kyizl/kyra/releases/latest";
-const DEV_RELEASES_API: &str = "https://api.github.com/repos/kyizl/kyra/releases/tags/dev-latest";
-
-fn releases_api() -> &'static str {
-    match option_env!("KYRA_UPDATE_CHANNEL") {
-        Some("dev") => DEV_RELEASES_API,
-        _ => PRODUCTION_RELEASES_API,
-    }
-}
-
-fn release_is_current(release: &serde_json::Value, version: &str) -> bool {
-    if option_env!("KYRA_UPDATE_CHANNEL") != Some("dev") {
-        return version.is_empty() || version == env!("CARGO_PKG_VERSION");
-    }
-
-    let Some(commit) = option_env!("KYRA_BUILD_COMMIT") else {
-        return false;
-    };
-    !commit.is_empty()
-        && release
-            .get("body")
-            .and_then(serde_json::Value::as_str)
-            .is_some_and(|body| body.contains(commit))
-}
-
 static HTTP_CLIENT: OnceLock<Result<reqwest::Client, String>> = OnceLock::new();
 
-fn release_version(tag: Option<&str>) -> &str {
-    tag.unwrap_or_default().trim_start_matches('v')
-}
-
-fn http_client() -> Result<reqwest::Client, String> {
+pub(crate) fn http_client() -> Result<reqwest::Client, String> {
     HTTP_CLIENT
         .get_or_init(|| {
             reqwest::Client::builder()
@@ -98,13 +68,6 @@ struct ProxyStatusEvent<'a> {
     bind_host: &'a str,
     client_count: usize,
     error: &'a Option<String>,
-}
-
-#[derive(serde::Deserialize)]
-struct ReleaseAsset {
-    name: String,
-    browser_download_url: String,
-    digest: Option<String>,
 }
 
 #[derive(Clone, Serialize)]
@@ -202,143 +165,6 @@ pub fn window_open_external(app: AppHandle, url: String) -> Result<(), String> {
 pub fn clipboard_set_text(text: String) -> Result<(), String> {
     let mut clipboard = Clipboard::new().map_err(|error| error.to_string())?;
     clipboard.set_text(text).map_err(|error| error.to_string())
-}
-
-#[tauri::command]
-pub async fn updater_check(app: AppHandle) -> Result<(), String> {
-    app.emit(
-        "updater:status",
-        serde_json::json!({ "status": "checking" }),
-    )
-    .map_err(|error| error.to_string())?;
-    let response = http_client()?
-        .get(releases_api())
-        .header("User-Agent", "Kyra-Overlay")
-        .send()
-        .await;
-    let response = match response {
-        Ok(response) => response,
-        Err(error) => {
-            app.emit(
-                "updater:status",
-                serde_json::json!({ "status": "error", "error": error.to_string() }),
-            )
-            .map_err(|emit_error| emit_error.to_string())?;
-            return Ok(());
-        }
-    };
-    let release = match response.error_for_status() {
-        Ok(response) => response
-            .json::<serde_json::Value>()
-            .await
-            .map_err(|error| error.to_string())?,
-        Err(error) => {
-            app.emit(
-                "updater:status",
-                serde_json::json!({ "status": "error", "error": error.to_string() }),
-            )
-            .map_err(|emit_error| emit_error.to_string())?;
-            return Ok(());
-        }
-    };
-    let version = release_version(release.get("tag_name").and_then(serde_json::Value::as_str));
-    let current = env!("CARGO_PKG_VERSION");
-    let status = if release_is_current(&release, version) {
-        serde_json::json!({ "status": "up-to-date", "version": current })
-    } else {
-        serde_json::json!({ "status": "available", "version": version })
-    };
-    app.emit("updater:status", status)
-        .map_err(|error| error.to_string())
-}
-
-fn installer_suffix() -> &'static str {
-    if cfg!(target_os = "windows") {
-        ".exe"
-    } else if cfg!(target_os = "macos") {
-        ".dmg"
-    } else {
-        ".appimage"
-    }
-}
-
-#[tauri::command]
-pub async fn updater_install(app: AppHandle) -> Result<(), String> {
-    let release = http_client()?
-        .get(releases_api())
-        .header("User-Agent", "Kyra-Overlay")
-        .send()
-        .await
-        .map_err(|error| error.to_string())?
-        .error_for_status()
-        .map_err(|error| error.to_string())?
-        .json::<serde_json::Value>()
-        .await
-        .map_err(|error| error.to_string())?;
-    let asset = release
-        .get("assets")
-        .and_then(serde_json::Value::as_array)
-        .and_then(|assets| {
-            assets
-                .iter()
-                .filter_map(|asset| serde_json::from_value::<ReleaseAsset>(asset.clone()).ok())
-                .find(|asset| {
-                    asset
-                        .name
-                        .to_ascii_lowercase()
-                        .ends_with(installer_suffix())
-                })
-        })
-        .ok_or_else(|| "no installer asset is available for this platform".to_owned())?;
-    app.emit(
-        "updater:status",
-        serde_json::json!({ "status": "downloading", "version": release_version(release.get("tag_name").and_then(serde_json::Value::as_str)) }),
-    )
-    .map_err(|error| error.to_string())?;
-    let bytes = reqwest::Client::builder()
-        .connect_timeout(std::time::Duration::from_secs(10))
-        .timeout(std::time::Duration::from_secs(300))
-        .build()
-        .map_err(|error| error.to_string())?
-        .get(asset.browser_download_url)
-        .send()
-        .await
-        .map_err(|error| error.to_string())?
-        .error_for_status()
-        .map_err(|error| error.to_string())?
-        .bytes()
-        .await
-        .map_err(|error| error.to_string())?;
-    if let Some(expected) = asset
-        .digest
-        .as_deref()
-        .and_then(|digest| digest.strip_prefix("sha256:"))
-    {
-        let actual = format!("{:x}", Sha256::digest(&bytes));
-        if actual != expected {
-            return Err(
-                "downloaded installer checksum does not match the release digest".to_owned(),
-            );
-        }
-    }
-    let path = std::env::temp_dir().join(&asset.name);
-    tokio::fs::write(&path, bytes)
-        .await
-        .map_err(|error| error.to_string())?;
-    app.emit(
-        "updater:status",
-        serde_json::json!({ "status": "installing" }),
-    )
-    .map_err(|error| error.to_string())?;
-    if cfg!(target_os = "windows") {
-        std::process::Command::new(&path)
-            .spawn()
-            .map_err(|error| error.to_string())?;
-        app.exit(0);
-    } else {
-        opener::open(&path).map_err(|error| error.to_string())?;
-    }
-    Ok(())
 }
 
 #[tauri::command]
@@ -1206,12 +1032,5 @@ mod tests {
         let value = serde_json::to_value(result).unwrap();
         assert_eq!(value["canceled"], false);
         assert_eq!(value["filePaths"][0], "C:\\image.png");
-    }
-
-    #[test]
-    fn normalizes_release_versions() {
-        assert_eq!(super::release_version(Some("v1.11.1")), "1.11.1");
-        assert_eq!(super::release_version(Some("1.12.0")), "1.12.0");
-        assert_eq!(super::release_version(None), "");
     }
 }

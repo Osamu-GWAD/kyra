@@ -33,32 +33,42 @@ const activeTab = ref(
 
 type UpdateStatus =
   | 'idle'
-  | 'dev'
   | 'checking'
   | 'up-to-date'
   | 'available'
   | 'downloading'
   | 'downloaded'
+  | 'installing'
   | 'error';
 const updateStatus = ref<UpdateStatus>('idle');
 const updateVersion = ref('');
 const updatePercent = ref(0);
 const updateError = ref('');
 
+const updateBusy = computed(() =>
+  ['checking', 'available', 'downloading', 'downloaded', 'installing'].includes(
+    updateStatus.value,
+  ),
+);
+
+const updateVersionLabel = computed(() =>
+  /^\d/.test(updateVersion.value) ? `v${updateVersion.value}` : updateVersion.value,
+);
+
 const updateStatusText = computed(() => {
   switch (updateStatus.value) {
-    case 'dev':
-      return 'Updates disabled in dev mode';
     case 'checking':
       return 'Checking for updates…';
     case 'up-to-date':
       return 'You are on the latest version';
     case 'available':
-      return `Update available: v${updateVersion.value}`;
+      return `Update available: ${updateVersionLabel.value}`;
     case 'downloading':
-      return `Downloading… ${updatePercent.value}%`;
+      return `Downloading ${updateVersionLabel.value}… ${updatePercent.value}%`;
     case 'downloaded':
-      return `v${updateVersion.value} ready to install`;
+      return `${updateVersionLabel.value} ready to install`;
+    case 'installing':
+      return 'Installing update…';
     case 'error':
       return `Error: ${updateError.value}`;
     default:
@@ -688,7 +698,7 @@ const proxies = computed(() => [
               variant="control"
               size="sm"
               class="gap-1.5"
-              :disabled="updateStatus === 'checking' || updateStatus === 'downloading'"
+              :disabled="updateBusy"
               @click="checkUpdate"
             >
               <RefreshCw :size="10" />
