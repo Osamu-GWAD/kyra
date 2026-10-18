@@ -251,7 +251,7 @@ function handleClose(): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0);
+  background: var(--modal-scrim-clear);
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
 
@@ -264,14 +264,14 @@ function handleClose(): void {
 }
 
 .backdrop.visible {
-  background: rgba(6, 4, 6, 0.94);
+  background: var(--modal-scrim);
   backdrop-filter: blur(22px) saturate(115%);
   -webkit-backdrop-filter: blur(22px) saturate(115%);
   pointer-events: all;
 }
 
 html.low-end .backdrop.visible {
-  background: rgba(6, 4, 6, 0.98);
+  background: var(--modal-surface);
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -289,7 +289,7 @@ html.low-end .backdrop.visible {
   border: 1px solid rgba(var(--color-accent-rgb), 0.2);
   border-radius: 16px;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.045) inset,
+    0 0 0 1px var(--modal-line) inset,
     0 32px 80px rgba(0, 0, 0, 0.7),
     0 0 60px rgba(var(--color-accent-rgb), 0.1);
   opacity: 0;
@@ -385,7 +385,7 @@ html.low-end .card {
 .header-title {
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--modal-ink-soft);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -395,9 +395,9 @@ html.low-end .card {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--modal-line);
+  background: var(--modal-fill);
+  color: var(--modal-ink-faint);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -410,9 +410,9 @@ html.low-end .card {
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.65);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: var(--modal-fill-hover);
+  color: var(--modal-ink-soft);
+  border-color: var(--modal-line-strong);
 }
 
 .divider {
@@ -453,7 +453,7 @@ html.low-end .card {
 
 .release-date {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.26);
+  color: var(--modal-ink-faint);
   margin-bottom: 14px;
   letter-spacing: 0.02em;
 }
@@ -470,7 +470,7 @@ html.low-end .card {
 .markdown-content {
   font-size: 13px;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--modal-ink-soft);
 }
 
 .markdown-content :deep(h1),
@@ -494,7 +494,7 @@ html.low-end .card {
 
 .markdown-content :deep(h3) {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--modal-ink);
 }
 
 .markdown-content :deep(h1:first-child),
@@ -538,7 +538,7 @@ html.low-end .card {
 }
 
 .markdown-content :deep(em) {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--modal-ink);
   font-style: italic;
 }
 
@@ -553,7 +553,7 @@ html.low-end .card {
 }
 
 .markdown-content :deep(pre) {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--modal-inset);
   border: 1px solid rgba(var(--color-accent-rgb), 0.15);
   border-radius: 8px;
   padding: 12px 14px;
@@ -573,7 +573,7 @@ html.low-end .card {
   border-left: 3px solid rgba(var(--color-accent-rgb), 0.5);
   margin: 0.8em 0;
   padding: 6px 12px;
-  color: rgba(255, 255, 255, 0.58);
+  color: var(--modal-ink-soft);
   font-style: italic;
   background: rgba(var(--color-accent-rgb), 0.06);
   border-radius: 0 6px 6px 0;
@@ -605,7 +605,7 @@ html.low-end .card {
 .markdown-content :deep(th) {
   padding: 6px 10px;
   text-align: left;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--modal-ink);
   font-weight: 600;
   border-bottom: 1px solid rgba(var(--color-accent-rgb), 0.25);
   background: rgba(var(--color-accent-rgb), 0.08);
@@ -613,8 +613,8 @@ html.low-end .card {
 
 .markdown-content :deep(td) {
   padding: 5px 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.72);
+  border-bottom: 1px solid var(--modal-line);
+  color: var(--modal-ink-soft);
 }
 
 .card-footer {
