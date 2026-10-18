@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tauri dev",
     "renderer:dev": "vite --config vite.config.ts",
-    "build": "vue-tsc --noEmit && vite build --config vite.config.ts",
+    "build": "npm run typecheck && vite build --config vite.config.ts",
     "preview": "vite preview --config vite.config.ts",
     "e2e": "playwright test",
     "tauri:dev": "tauri dev",
@@ -16,7 +16,7 @@
     "lint:fix": "eslint src --fix --max-warnings 9999",
     "format": "prettier --write \"src/**/*.{ts,vue,css,html}\"",
     "format:check": "prettier --check \"src/**/*.{ts,vue,css,html}\"",
-    "typecheck": "vue-tsc --noEmit",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.node.json && vue-tsc --noEmit -p tsconfig.web.json && vue-tsc --noEmit -p tsconfig.codemods.json",
     "codemod": "npm --prefix codemods run codemod",
     "fix": "npm run codemod && npm run typecheck && npm run lint:fix && npm run format",
     "knip": "knip"
@@ -51,7 +51,7 @@
     "@types/node": "^26.5.0",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/tsconfig": "^0.9.1",
-    "conventional-changelog-conventionalcommits": "^10.4.0",
+    "conventional-changelog-conventionalcommits": "^9.3.1",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-format": "^2.0.1",
