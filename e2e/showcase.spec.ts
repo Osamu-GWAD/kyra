@@ -2,6 +2,8 @@ import type { Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { test } from '@playwright/test';
+import type { ShowcaseApiResult, ShowcaseNetwork } from './showcase-stats';
+import { fetchShowcasePlayer } from './showcase-stats';
 
 const api = 'https://craftigames.kyizl.is-a.dev/api/staff';
 
@@ -22,23 +24,15 @@ async function fetchStaffUsernames(network: 'pika' | 'jartex'): Promise<string[]
 }
 
 const NON_STAFF_USERNAMES = {
-  pika: [
-    'Climbby', // Partner
-    'avised', // Champion
-    'resuns', // Titan
-    'izoo_', // Elite
-    'Si1ent_', // VIP
-    'Hiqhest', // NON
-    'IStayKittens', // Nicked
-  ],
+  pika: ['Climbby', 'avised', 'resuns', 'izoo_', 'Si1ent_', 'Hiqhest', 'IStayKittens'],
   jartex: [
-    'Climbby', // Partner
-    'Lexi58', // Crystal
-    'Meelb', // Diamond
-    'DARKpeveresh', // Gold
-    'Sandy07', // Iron
-    'Si1ent_', // NON
-    'IStayKittens', // Nicked
+    'Climbby',
+    'Lexi58',
+    'Meelb',
+    'DARKpeveresh',
+    'Sandy07',
+    'Si1ent_',
+    'IStayKittens',
   ],
 };
 
@@ -121,23 +115,13 @@ const nicks = {
   nicks: [{ id: 'showcase-nick-1', nick: 'IStayKittens', realName: 'harshil_mc' }],
 };
 
-interface ShowcaseApiResult {
-  notFound?: boolean;
-  rateLimit?: boolean;
-  profile?: Record<string, unknown> | null;
-  stats?: unknown;
-}
-
-interface ShowcaseStatsApi {
-  fetch: (username: string, interval: string, mode: string) => Promise<ShowcaseApiResult>;
-}
-
 async function captureShowcase(
   page: Page,
   players: string[],
   configSeed: Record<string, unknown>,
   outputFilename: string,
 ): Promise<void> {
+  await page.exposeFunction('showcaseFetch', fetchShowcasePlayer);
   await page.setViewportSize({ width: 1400, height: 800 });
   await page.goto('/');
 
@@ -189,11 +173,15 @@ async function captureShowcase(
       const state = pinia.state?.value as
         Record<string, Record<string, unknown>> | undefined;
       if (!state) throw new Error('[showcase] pinia state not found');
-      const api = (
-        window as unknown as {
-          api: { jartex: ShowcaseStatsApi; pika: ShowcaseStatsApi };
-        }
-      ).api[net === 'jartexnetwork' ? 'jartex' : 'pika'];
+      const bridge = window as unknown as {
+        showcaseFetch: (
+          network: ShowcaseNetwork,
+          username: string,
+          interval: string,
+          mode: string,
+        ) => Promise<ShowcaseApiResult>;
+      };
+      const statsNetwork: ShowcaseNetwork = net === 'jartexnetwork' ? 'jartex' : 'pika';
 
       const normalizeProfile = (
         profile: Record<string, unknown> | null,
@@ -239,7 +227,12 @@ async function captureShowcase(
           await new Promise((r) => setTimeout(r, i * 350));
 
           try {
-            const result = await api.fetch(username, 'total', 'ALL_MODES');
+            const result = await bridge.showcaseFetch(
+              statsNetwork,
+              username,
+              'total',
+              'ALL_MODES',
+            );
             const playerList = state.players.players as Array<Record<string, unknown>>;
             const idx = playerList.findIndex(
               (p) => (p.realName as string).toLowerCase() === username.toLowerCase(),
@@ -279,6 +272,13 @@ async function captureShowcase(
           }
         }),
       );
+
+      const failed = (state.players.players as Array<Record<string, unknown>>)
+        .filter((p) => p.error === 'network' || p.error === 'rate_limited')
+        .map((p) => p.realName as string);
+      if (failed.length > 0) {
+        throw new Error(`[showcase] stats could not be loaded for: ${failed.join(', ')}`);
+      }
     },
     { names: players, net: network },
   );
