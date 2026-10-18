@@ -144,11 +144,8 @@ mod tests {
 
     #[test]
     fn ephemeral_browser_data_is_not_migrated() {
-        assert!(is_ephemeral_path(std::path::Path::new(
-            r"C:\Users\test\AppData\Roaming\kyra\Cache\data"
-        )));
-        assert!(!is_ephemeral_path(std::path::Path::new(
-            r"C:\Users\test\AppData\Roaming\kyra\Local Storage\data"
-        )));
+        let root = std::path::Path::new("kyra");
+        assert!(is_ephemeral_path(&root.join("Cache").join("data")));
+        assert!(!is_ephemeral_path(&root.join("Local Storage").join("data")));
     }
 }
