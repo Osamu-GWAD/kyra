@@ -211,7 +211,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0);
+  background: var(--modal-scrim-clear);
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
 
@@ -224,7 +224,7 @@ onUnmounted(() => {
 }
 
 .backdrop.visible {
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--modal-scrim);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   pointer-events: all;
@@ -242,7 +242,7 @@ onUnmounted(() => {
   border: 1px solid rgba(var(--color-accent-rgb), 0.2);
   border-radius: 16px;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.045) inset,
+    0 0 0 1px var(--modal-line) inset,
     0 32px 80px rgba(0, 0, 0, 0.7),
     0 0 60px rgba(var(--color-accent-rgb), 0.1);
   opacity: 0;
@@ -338,9 +338,9 @@ html.low-end .card {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--modal-line);
+  background: var(--modal-fill);
+  color: var(--modal-ink-faint);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -353,9 +353,9 @@ html.low-end .card {
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.65);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: var(--modal-fill-hover);
+  color: var(--modal-ink-soft);
+  border-color: var(--modal-line-strong);
 }
 
 .divider {
@@ -383,7 +383,7 @@ html.low-end .card {
   margin: 0;
   font-size: 12.5px;
   line-height: 1.55;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--modal-ink-soft);
 }
 
 .code-block {
@@ -393,7 +393,7 @@ html.low-end .card {
   gap: 10px;
   padding: 12px 14px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--modal-inset);
   border: 1px solid rgba(var(--color-accent-rgb), 0.25);
 }
 
@@ -492,16 +492,16 @@ html.low-end .card {
 
 .status-text {
   font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--modal-ink-muted);
   line-height: 1.4;
 }
 
 .status-text.success {
-  color: #4ade80;
+  color: var(--color-good);
 }
 
 .status-text.error {
-  color: #f87171;
+  color: var(--color-bad);
 }
 
 .status-icon {
@@ -514,11 +514,11 @@ html.low-end .card {
 }
 
 .status-icon.success {
-  color: #4ade80;
+  color: var(--color-good);
 }
 
 .status-icon.error {
-  color: #f87171;
+  color: var(--color-bad);
 }
 
 .spinner {
@@ -549,9 +549,9 @@ html.low-end .card {
   font-weight: 600;
   padding: 7px 20px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--modal-line-strong);
+  background: var(--modal-fill);
+  color: var(--modal-ink-soft);
   cursor: pointer;
   letter-spacing: 0.02em;
   transition:
@@ -561,8 +561,8 @@ html.low-end .card {
 }
 
 .dismiss-btn:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.85);
+  background: var(--modal-fill-hover);
+  border-color: var(--modal-line-strong);
+  color: var(--modal-ink);
 }
 </style>

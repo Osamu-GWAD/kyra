@@ -144,7 +144,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(8, 6, 8, 0);
+  background: var(--modal-scrim-clear);
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
 
@@ -157,14 +157,14 @@ onMounted(() => {
 }
 
 .backdrop.visible {
-  background: rgba(6, 4, 6, 0.94);
+  background: var(--modal-scrim);
   backdrop-filter: blur(22px) saturate(115%);
   -webkit-backdrop-filter: blur(22px) saturate(115%);
   pointer-events: all;
 }
 
 html.low-end .backdrop.visible {
-  background: rgba(6, 4, 6, 0.98);
+  background: var(--modal-surface);
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -180,7 +180,7 @@ html.low-end .backdrop.visible {
   border: 1px solid rgba(var(--color-accent-rgb), 0.2);
   border-radius: 14px;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.045) inset,
+    0 0 0 1px var(--modal-line) inset,
     0 24px 60px rgba(0, 0, 0, 0.55),
     0 0 50px rgba(var(--color-accent-rgb), 0.1);
   opacity: 0;
@@ -244,7 +244,7 @@ html.low-end .header-icon {
   margin: 6px 0 0;
   font-size: 12.5px;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--modal-ink-muted);
 }
 
 .data-section {
@@ -258,7 +258,7 @@ html.low-end .header-icon {
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.32);
+  color: var(--modal-ink-faint);
   margin-bottom: 8px;
   text-align: left;
 }
@@ -266,8 +266,8 @@ html.low-end .header-icon {
 .data-list {
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--modal-fill);
+  border: 1px solid var(--modal-line);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -281,18 +281,18 @@ html.low-end .header-icon {
 }
 
 .data-item + .data-item {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--modal-line);
 }
 
 .data-icon {
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--modal-ink-muted);
 }
 
 .data-name {
   font-size: 12.5px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--modal-ink);
 }
 
 .privacy-note {
@@ -306,14 +306,14 @@ html.low-end .header-icon {
 .privacy-icon {
   flex-shrink: 0;
   margin-top: 1px;
-  color: rgba(255, 255, 255, 0.32);
+  color: var(--modal-ink-faint);
 }
 
 .privacy-note p {
   margin: 0;
   font-size: 11.5px;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--modal-ink-muted);
 }
 
 .link-btn {
@@ -386,14 +386,14 @@ html.low-end .header-icon {
 .error-text {
   margin: 10px 0 0;
   font-size: 11.5px;
-  color: #f87171;
+  color: var(--color-bad);
 }
 
 .consent-note {
   margin: 14px 0 0;
   font-size: 10.5px;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.28);
+  color: var(--modal-ink-faint);
 }
 
 @keyframes spin {
