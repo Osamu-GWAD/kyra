@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { join } from 'node:path';
 import process from 'node:process';
 import { app, safeStorage } from 'electron';
+import { decryptLocalSecret, encryptLocalSecret, isLocalSecret } from './local-secret';
 
 export type TrafficMode = 'middleware' | 'direct';
 
@@ -49,24 +50,25 @@ function persist(next: TrafficConfig): TrafficStatus {
   return getTrafficStatus();
 }
 
-function requireEncryption(): void {
-  if (
-    !safeStorage.isEncryptionAvailable() ||
-    (process.platform === 'linux' &&
-      safeStorage.getSelectedStorageBackend() === 'basic_text')
-  ) {
-    throw new Error(
-      'Secure storage is unavailable. Unlock your system keyring and try again.',
-    );
-  }
+function canUseSystemStorage(): boolean {
+  return (
+    safeStorage.isEncryptionAvailable() &&
+    (process.platform !== 'linux' ||
+      safeStorage.getSelectedStorageBackend() !== 'basic_text')
+  );
 }
 
 function readApiKey(): string {
   const { encryptedApiKey } = loadConfig();
   if (encryptedApiKey === undefined || encryptedApiKey === '')
     throw new Error('Save an API key in Settings → Traffic first.');
-  requireEncryption();
   try {
+    if (isLocalSecret(encryptedApiKey)) {
+      return decryptLocalSecret(app.getPath('userData'), encryptedApiKey);
+    }
+    if (!canUseSystemStorage()) {
+      throw new Error('System credential storage is unavailable.');
+    }
     return safeStorage.decryptString(Buffer.from(encryptedApiKey, 'base64'));
   } catch {
     throw new Error(
@@ -94,8 +96,14 @@ export function saveTrafficApiKey(value: string): TrafficStatus {
   if (typeof value !== 'string' || !/^[\x21-\x7E]+$/.test(value.trim())) {
     throw new Error('Enter a valid API key without spaces or control characters.');
   }
-  requireEncryption();
-  const encryptedApiKey = safeStorage.encryptString(value.trim()).toString('base64');
+  let encryptedApiKey: string;
+  try {
+    if (!canUseSystemStorage())
+      throw new Error('System credential storage is unavailable.');
+    encryptedApiKey = safeStorage.encryptString(value.trim()).toString('base64');
+  } catch {
+    encryptedApiKey = encryptLocalSecret(app.getPath('userData'), value.trim());
+  }
   return persist({ mode: 'direct', encryptedApiKey });
 }
 
