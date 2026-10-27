@@ -21,7 +21,7 @@ device_query = "2"
 discord-rpc-client = "0.4"
 screenshots = "0.8"
 arboard = "3"
-keyring = { version = "3", features = ["windows-native", "apple-native", "linux-native"] }
+keyring = { version = "3", features = ["windows-native", "apple-native", "linux-native-sync-persistent", "crypto-rust"] }
 rfd = "0.15"
 dirs = "6"
 opener = "0.7"
