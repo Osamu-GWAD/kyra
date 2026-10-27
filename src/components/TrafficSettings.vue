@@ -12,7 +12,11 @@ const loaded = ref(false);
 const error = ref('');
 const message = ref('');
 
-async function update(action: () => Promise<TrafficStatus>, success = ''): Promise<void> {
+async function update(
+  action: () => Promise<TrafficStatus>,
+  success = '',
+  keepInputOnError = false,
+): Promise<void> {
   busy.value = true;
   error.value = '';
   message.value = '';
@@ -23,8 +27,12 @@ async function update(action: () => Promise<TrafficStatus>, success = ''): Promi
     loaded.value = true;
     message.value = success;
   } catch (cause) {
-    selectedMode.value = status.value.mode;
-    error.value = cause instanceof Error ? cause.message : String(cause);
+    if (!keepInputOnError) selectedMode.value = status.value.mode;
+    const detail = cause instanceof Error ? cause.message : String(cause);
+    error.value = detail.replace(
+      /^Error invoking remote method '[^']+': (?:Error: )?/,
+      '',
+    );
   } finally {
     busy.value = false;
   }
@@ -44,6 +52,7 @@ function saveApiKey(): void {
   void update(
     () => window.api.traffic.saveApiKey(apiKey.value.trim()),
     'API key saved securely. PikaNetwork requests now use your key.',
+    true,
   );
 }
 
@@ -139,7 +148,7 @@ onMounted(loadSettings);
               ? 'An API key is saved securely. Saving a replacement enables direct requests.'
               : 'Save a key to enable direct requests. Until then, traffic uses the middleware proxy.'
           }}
-          Your key is encrypted in secure storage on this device.
+          Your key is encrypted before it is saved on this device.
         </p>
         <div class="flex flex-wrap gap-2">
           <Button

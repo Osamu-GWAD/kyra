@@ -2,6 +2,7 @@
 
 mod auth;
 mod commands;
+mod local_secret;
 mod migration;
 mod state;
 mod traffic;

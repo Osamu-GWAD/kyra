@@ -35,7 +35,10 @@ test.beforeEach(async ({ page }) => {
         return { ...status };
       },
       saveApiKey: async (key) => {
-        if (key === 'unavailable') throw new Error('Secure storage is unavailable.');
+        if (key === 'unavailable')
+          throw new Error(
+            "Error invoking remote method 'traffic:save-api-key': Error: Secure storage is unavailable.",
+          );
         status = { mode: 'direct', hasApiKey: true };
         return { ...status };
       },
@@ -99,14 +102,21 @@ test('saves, replaces, switches, and removes the API key', async ({ page }) => {
   );
 });
 
-test('reports secure storage failures without enabling direct requests', async ({
+test('keeps the key entry available after a save failure and supports retry', async ({
   page,
 }) => {
   await page.getByRole('radio', { name: /Use my own API key/ }).check();
   await page.locator('#traffic-api-key').fill('unavailable');
   await page.getByRole('button', { name: 'Save API key', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Secure storage is unavailable');
-  await expect(
-    page.getByRole('radio', { name: /Route through middleware proxy/ }),
-  ).toBeChecked();
+  await expect(page.getByRole('alert')).not.toContainText('Error invoking remote method');
+  await expect(page.getByRole('radio', { name: /Use my own API key/ })).toBeChecked();
+  await expect(page.locator('#traffic-api-key')).toHaveValue('unavailable');
+  expect(
+    await page.evaluate(async () => (window as unknown as TestWindow).api.traffic.get()),
+  ).toEqual({ mode: 'middleware', hasApiKey: false });
+  await page.locator('#traffic-api-key').fill('retry-test-key');
+  await page.getByRole('button', { name: 'Save API key', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('saved securely');
+  await expect(page.locator('#traffic-api-key')).toHaveValue('');
 });
