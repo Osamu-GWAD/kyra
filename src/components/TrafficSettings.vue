@@ -64,7 +64,7 @@ onMounted(loadSettings);
 <template>
   <Section
     title="Traffic"
-    description="Choose how Kyra fetches PikaNetwork profiles, stats, and clans."
+    description="Choose how Kyra connects to PikaNetwork to retrieve player profiles, BedWars stats, and clan details."
   >
     <div class="traffic-settings no-drag flex flex-col gap-3 py-3">
       <fieldset
@@ -85,9 +85,9 @@ onMounted(loadSettings);
           <span class="flex min-w-0 flex-col gap-1">
             <span class="traffic-label">Route through middleware proxy</span>
             <span class="traffic-description"
-              >No API key required. Selected by default.</span
+              >Use Kyra's shared service to fetch PikaNetwork data. This is the default
+              option and works without an API key.</span
             >
-            <span class="traffic-endpoint">https://proxy.kyizl.is-a.dev/api/</span>
           </span>
         </label>
         <label
@@ -103,9 +103,9 @@ onMounted(loadSettings);
           <span class="flex min-w-0 flex-col gap-1">
             <span class="traffic-label">Use my own API key</span>
             <span class="traffic-description"
-              >Connect directly to the PikaNetwork API.</span
+              >Send requests directly to PikaNetwork using your own API key. Add a valid
+              key below to enable direct access.</span
             >
-            <span class="traffic-endpoint">https://stats.pika-network.net/api/</span>
           </span>
         </label>
       </fieldset>
@@ -208,14 +208,9 @@ onMounted(loadSettings);
   font-size: 0.82rem;
 }
 
-.traffic-description,
-.traffic-endpoint {
+.traffic-description {
   color: var(--color-ink-3);
   font-size: 0.74rem;
   line-height: 1.6;
-}
-
-.traffic-endpoint {
-  overflow-wrap: anywhere;
 }
 </style>
